@@ -1,45 +1,79 @@
 //Baseado em: https://github.com/jarzebski/Arduino-MPU6050/blob/master/MPU6050.cpp
-#include <stdint>
+#include <linux/i2c-dev.h>
+#include <iostream>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <math.h>
 #include "mpulib.h"
+
+
+
+#define __ARCH __ARCH_RASPI
+// Para mais detalhes, acesse o arquivo de
+// cabeçalhos.
 
 
 bool MPU6050::setup(mpu6050_dps_t scale, mpu6050_range_t range, int i2cAddr){
 	char fileName[] = "/dev/i2c-1";
-  //Abre ponteiro para arquivo
+	//Abre ponteiro para arquivo
 	if ((fd = open(fileName, O_RDWR)) < 0) {
-        printf("Falha ao abrir porta I2C\n");
-        return false;
-  }
-  if (ioctl(fd, I2C_SLAVE, i2cAddr) < 0) {
-      printf("Não foi possivel obter acesso do barramento.\n");
-      return false;
-  }
+		printf("Falha ao abrir porta I2C\n");
+		return false;
+	}
+	if (ioctl(fd, I2C_SLAVE, i2cAddr) < 0) {
+		printf("Não foi possivel obter acesso do barramento.\n");
+		return false;
+	}
 
 	//Reseta valores de calibragem:
 	dg.XAxis = 0;
-  dg.YAxis = 0;
-  dg.ZAxis = 0;
-  useCalibrate = false;
+	dg.YAxis = 0;
+	dg.ZAxis = 0;
+	useCalibrate = false;
 
-  //Reseta limiares
-  tg.XAxis = 0;
-  tg.YAxis = 0;
-  tg.ZAxis = 0;
-  actualThreshold = 0;
+	//Reseta limiares
+	tg.XAxis = 0;
+	tg.YAxis = 0;
+	tg.ZAxis = 0;
+	actualThreshold = 0;
 
-  setScale(scale);
-  setRange(range);
+	setScale(scale);
+	setRange(range);
 
-  //Equivalente a iniciar:
-  setSleepEnabled(false);
+	//Equivalente a iniciar:
+	setSleepEnabled(false);
 
-  return read8(MPU6050_REG_WHO_AM_I) == 0x68;
+	return read8(MPU6050_REG_WHO_AM_I) == 0x68;
 }
 
-void MPU6050::write16(int Addr, int16_t data){
-  write8(Addr,(int8_t) (data>>8));
-  write8(Addr+1,(int8_t) data);
+bool MPU6050::unset(){
+	setSleepEnabled(true);
+	return getSleepEnabled();
 }
+
+#if __ARCH == __ARCH_RASPI
+
+	int8_t MPU6050::read8(int Addr){
+		return i2c_smbus_read_byte_data(fd, Addr);
+	}
+
+	void MPU6050::write8(int Addr, int8_t data){
+		i2c_smbus_write_byte_data(fd, Addr, data);
+	}
+	
+	int16_t MPU6050::read16(int Addr){
+		return i2c_smbus_read_byte_data(fd, Addr) << 8 | i2c_smbus_read_byte_data(fd, Addr+1);
+	}
+	
+	void MPU6050::write16(int Addr, int16_t data){
+		i2c_smbus_write_byte_data(fd, Addr, (int8_t) (data>>8));
+		i2c_smbus_write_byte_data(fd, Addr+1, (int8_t) data);
+	}
+
+#endif
+
+
 
 bool MPU6050::readRbit(int reg, int pos) {
     uint8_t value;
@@ -63,16 +97,18 @@ void MPU6050::writeRbit(int reg, int pos, bool state) {
 // Operações de PROCESSAMENTO
 //
 
-void MPU6050::readRawGyro(){
+Vector MPU6050::readRawGyro(){
   rg.XAxis = read16(MPU6050_REG_GYRO_XOUT_H);
   rg.YAxis = read16(MPU6050_REG_GYRO_YOUT_H);
   rg.ZAxis = read16(MPU6050_REG_GYRO_ZOUT_H);
+  return rg;
 }
 
-void MPU6050::readRawAccel(){
+Vector MPU6050::readRawAccel(){
   ra.XAxis = read16(MPU6050_REG_ACCEL_XOUT_H);
   ra.YAxis = read16(MPU6050_REG_ACCEL_YOUT_H);
   ra.ZAxis = read16(MPU6050_REG_ACCEL_ZOUT_H);
+  return ra;
 }
 
 void MPU6050::calibrateGyro(int amostras) {
@@ -97,7 +133,7 @@ void MPU6050::calibrateGyro(int amostras) {
 	      sigmaX += rg.XAxis * rg.XAxis;
 	      sigmaY += rg.YAxis * rg.YAxis;
 	      sigmaZ += rg.ZAxis * rg.ZAxis;
-	      sleep(5 * 1000);
+	      //sleep(5 * 1000);
     }
 
     // Calcula vetores delta

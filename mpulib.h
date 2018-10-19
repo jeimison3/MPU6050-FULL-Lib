@@ -1,3 +1,12 @@
+#ifndef __ARCHS
+	#define __ARCHS
+	
+	#define __ARCH_ARDUINO (0x00)
+	#define __ARCH_RASPI (0x01)
+#endif
+
+
+
 //Baseado em: https://github.com/jarzebski/Arduino-MPU6050/blob/master/MPU6050.h
 #ifndef __MPULIB
 #define __MPULIB
@@ -135,13 +144,14 @@ typedef enum
   class MPU6050 {
   public:
     bool setup(mpu6050_dps_t scale, mpu6050_range_t range, int i2cAddr);
+    bool unset();
+    
+    int8_t read8(int Addr);
+    void write8(int Addr, int8_t data);
+    int16_t read16(int Addr);
+    void write16(int Addr, int16_t data);
 
-    void readRawGyro();
-    void readRawAccel();
     float getTemp();
-    mpu6050_clockSource_t getClockSource();
-    void setThreshold(int multiple);
-    void calibrateGyro(int amostras);
 
     Vector readNormalizeGyro();
     Vector readNormalizeAccel();
@@ -184,33 +194,15 @@ typedef enum
 
     uint8_t getFreeFallDetectionDuration();
     void setFreeFallDetectionDuration(uint8_t duration);
-
-
-
-
-
-  private:
-    Vector ra, rg; // Raw vectors
-	  Vector na, ng; // Normalized vectors
-	  Vector tg, dg; // Threshold and Delta for Gyro
-	  Vector th;     // Threshold
-	  Activites a;   // Activities
-	  float dpsPerDigit, rangePerDigit;
-	  float actualThreshold;
-	  bool useCalibrate;
-	  int mpuAddress;
-
-    int16_t read16(int Addr);
-    void write16(int Addr, int16_t data);
-    int8_t read8(int Addr);
-    void write8(int Addr, int8_t data);
+    
+    
     bool readRbit(int reg, int pos);
     void writeRbit(int reg, int pos, bool state);
 
-    void readRawGyro();
-    void readRawAccel();
-    void calibrateGyro(int amostras);
-    void setThreshold(int multiple);
+    Vector readRawGyro();
+    Vector readRawAccel();
+    void calibrateGyro(int amostras = 50);
+    void setThreshold(int multiple = 1);
 
     void setClockSource(mpu6050_clockSource_t fonte);
     mpu6050_clockSource_t getClockSource();
@@ -223,7 +215,9 @@ typedef enum
 
     void setAccelPowerOnDelay(mpu6050_onDelay_t delay);
     mpu6050_onDelay_t getAccelPowerOnDelay();
-
+    
+    
+    
     int16_t getGyroOffsetX();
     int16_t getGyroOffsetY();
     int16_t getGyroOffsetZ();
@@ -237,6 +231,22 @@ typedef enum
     void setAccelOffsetX(int16_t offset);
     void setAccelOffsetY(int16_t offset);
     void setAccelOffsetZ(int16_t offset);
+
+
+  private:
+    Vector ra, rg; // Raw vectors
+	  Vector na, ng; // Normalized vectors
+	  Vector tg, dg; // Threshold and Delta for Gyro
+	  Vector th;     // Threshold
+	  Activites a;   // Activities
+	  float dpsPerDigit, rangePerDigit;
+	  float actualThreshold;
+	  bool useCalibrate;
+	  int mpuAddress;
+	  int fd;
+
+	/*
+    */
 
 
 
