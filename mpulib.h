@@ -134,16 +134,60 @@ typedef enum
 
   class MPU6050 {
   public:
-    bool setup();
+    bool setup(mpu6050_dps_t scale, mpu6050_range_t range, int i2cAddr);
 
     void readRawGyro();
     void readRawAccel();
-
     float getTemp();
     mpu6050_clockSource_t getClockSource();
-
     void setThreshold(int multiple);
     void calibrateGyro(int amostras);
+
+    Vector readNormalizeGyro();
+    Vector readNormalizeAccel();
+    Vector readScaledAccel();
+
+    bool getSleepEnabled();
+    void setSleepEnabled(bool state);
+
+    bool getI2CMasterModeEnabled();
+    void setI2CMasterModeEnabled(bool state);
+
+    bool getI2CBypassEnabled();
+    void setI2CBypassEnabled(bool state);
+
+    bool getIntZeroMotionEnabled();
+    void setIntZeroMotionEnabled(bool state);
+
+    bool getIntMotionEnabled();
+    void setIntMotionEnabled(bool state);
+
+    bool getIntFreeFallEnabled();
+    void setIntFreeFallEnabled(bool state);
+
+    //Registradores:
+
+    uint8_t getMotionDetectionThreshold();
+    void setMotionDetectionThreshold(uint8_t threshold);
+
+    uint8_t getMotionDetectionDuration();
+    void setMotionDetectionDuration(uint8_t duration);
+
+    uint8_t getZeroMotionDetectionThreshold();
+    void setZeroMotionDetectionThreshold(uint8_t threshold);
+
+    uint8_t getZeroMotionDetectionDuration();
+    void setZeroMotionDetectionDuration(uint8_t duration);
+
+    uint8_t getFreeFallDetectionThreshold();
+    void setFreeFallDetectionThreshold(uint8_t threshold);
+
+    uint8_t getFreeFallDetectionDuration();
+    void setFreeFallDetectionDuration(uint8_t duration);
+
+
+
+
 
   private:
     Vector ra, rg; // Raw vectors
@@ -162,6 +206,40 @@ typedef enum
     void write8(int Addr, int8_t data);
     bool readRbit(int reg, int pos);
     void writeRbit(int reg, int pos, bool state);
+
+    void readRawGyro();
+    void readRawAccel();
+    void calibrateGyro(int amostras);
+    void setThreshold(int multiple);
+
+    void setClockSource(mpu6050_clockSource_t fonte);
+    mpu6050_clockSource_t getClockSource();
+
+    void setScale(mpu6050_dps_t escala);
+    mpu6050_dps_t getScale();
+
+    void setRange(mpu6050_range_t range);
+    mpu6050_range_t getRange();
+
+    void setAccelPowerOnDelay(mpu6050_onDelay_t delay);
+    mpu6050_onDelay_t getAccelPowerOnDelay();
+
+    int16_t getGyroOffsetX();
+    int16_t getGyroOffsetY();
+    int16_t getGyroOffsetZ();
+    void setGyroOffsetX(int16_t offset);
+    void setGyroOffsetY(int16_t offset);
+    void setGyroOffsetZ(int16_t offset);
+
+    int16_t getAccelOffsetX();
+    int16_t getAccelOffsetY();
+    int16_t getAccelOffsetZ();
+    void setAccelOffsetX(int16_t offset);
+    void setAccelOffsetY(int16_t offset);
+    void setAccelOffsetZ(int16_t offset);
+
+
+
   };
 
 #endif

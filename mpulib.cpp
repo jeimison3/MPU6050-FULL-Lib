@@ -215,7 +215,7 @@ void MPU6050::setRange(mpu6050_range_t range) {
     write8(MPU6050_REG_ACCEL_CONFIG, value);
 }
 
-mpu6050_range_t MPU6050::getRange(void) {
+mpu6050_range_t MPU6050::getRange() {
     uint8_t value;
     value = read8(MPU6050_REG_ACCEL_CONFIG);
     value &= 0b00011000; // Mascara
@@ -334,12 +334,12 @@ void MPU6050::setAccelOffsetZ(int16_t offset) {
 // Operações em BITS de REGISTRADORES
 //
 
-void MPU6050::setSleepEnabled(bool state) {
-  writeRbit(MPU6050_REG_PWR_MGMT_1, 6, state);
+bool MPU6050::getSleepEnabled() {
+	return readRbit(MPU6050_REG_PWR_MGMT_1, 6);
 }
 
-bool MPU6050::getSleepEnabled() {
-    return readRbit(MPU6050_REG_PWR_MGMT_1, 6);
+void MPU6050::setSleepEnabled(bool state) {
+  writeRbit(MPU6050_REG_PWR_MGMT_1, 6, state);
 }
 
 bool MPU6050::getI2CMasterModeEnabled() {
@@ -350,16 +350,16 @@ void MPU6050::setI2CMasterModeEnabled(bool state) {
     writeRbit(MPU6050_REG_USER_CTRL, 5, state);
 }
 
-void MPU6050::setI2CBypassEnabled(bool state) {
-    return writeRbit(MPU6050_REG_INT_PIN_CFG, 1, state);
-}
-
 bool MPU6050::getI2CBypassEnabled() {
     return readRbit(MPU6050_REG_INT_PIN_CFG, 1);
 }
 
+void MPU6050::setI2CBypassEnabled(bool state) {
+	return writeRbit(MPU6050_REG_INT_PIN_CFG, 1, state);
+}
+
 bool MPU6050::getIntZeroMotionEnabled() {
-    return readRbit(MPU6050_REG_INT_ENABLE, 5);
+	return readRbit(MPU6050_REG_INT_ENABLE, 5);
 }
 
 void MPU6050::setIntZeroMotionEnabled(bool state){
@@ -374,7 +374,7 @@ void MPU6050::setIntMotionEnabled(bool state) {
     writeRbit(MPU6050_REG_INT_ENABLE, 6, state);
 }
 
-bool MPU6050::getIntFreeFallEnabled(void) {
+bool MPU6050::getIntFreeFallEnabled() {
     return readRbit(MPU6050_REG_INT_ENABLE, 7);
 }
 
@@ -395,7 +395,7 @@ void MPU6050::setMotionDetectionThreshold(uint8_t threshold) {
     write8(MPU6050_REG_MOT_THRESHOLD, threshold);
 }
 
-uint8_t MPU6050::getMotionDetectionDuration(void) {
+uint8_t MPU6050::getMotionDetectionDuration() {
     return read8(MPU6050_REG_MOT_DURATION);
 }
 
